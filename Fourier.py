@@ -6,7 +6,17 @@ t = np.arange(0, 1, 1.0/Fs)  # 1s采样Fs个点
 
 F1 = 50  # 信号1的频率
 F2 = 75  # 信号2的频率
-y = 2 + 3*np.cos(2*np.pi*F1*t+np.pi/3) + 1.5*np.cos(2*np.pi*F2*t)
+F3 = 21  # 信号2的频率
+F4 = 100  # 信号2的频率
+F5 = 68  # 信号2的频率
+F6 = 500  # 信号2的频率
+F7 = 2  # 信号2的频率
+F8 = 33  # 信号2的频率
+F9 = 145  # 信号2的频率
+F10 = 90  # 信号2的频率
+
+y = 2 + 3*np.cos(2*np.pi*F1*t+np.pi/3) + 1.5*np.cos(2*np.pi*F2*t) + 3*np.cos(2*np.pi*F3*t+np.pi/6) + 1.5*np.cos(2*np.pi*F4*t) + 3*np.cos(2*np.pi*F5*t+np.pi/8) + 2*np.cos(2*np.pi*F6*t) + 3*np.cos(2*np.pi*F7*t+np.pi/3) + 4.5*np.cos(2*np.pi*F8*t) + 3.5*np.cos(2*np.pi*F9*t+np.pi/4) + 1.5*np.cos(2*np.pi*F10*t)
+
 
 N = len(t)  # 采样点数
 
@@ -20,10 +30,16 @@ Y1 = np.fft.fft(y)   # 复数
 Y = Y1 / (N/2)  # 换算成实际的振幅
 Y[0] = Y[0] / 2
 
+f=[]
+for i in range(Y.shape[0]):
+    if Y[i] > 0.1:
+        f.append(i)
+print(f"检测到频率个数为{len(f)}")
+
 freq_half = freq[range(int(N/2))]
 Y_half = Y[range(int(N/2))]
 
-fig, ax = plt.subplots(5, 1, figsize=(12, 12))
+fig, ax = plt.subplots(6, 1, figsize=(12, 12))
 ax[0].plot(t, y)
 ax[0].set_xlabel('Time (s)')
 ax[0].set_ylabel('Amplitude')
@@ -49,10 +65,21 @@ iy = np.fft.ifft(Y1).real
 ax[4].plot(t, iy)
 ax[4].set_xlabel('Time (s)')
 ax[4].set_ylabel('Amplitude')
+
+
+#对傅里叶分解的结果，我们只选择一些频率进行逆变换，可以得到原序列的相似序列，因此通过仔细选择记录哪些系数，我们可以执行压缩、去噪等多种任务。
+Y2 = Y1.copy()
+for i in range(5):
+    Y2[int(f[i])] = 0
+iy = np.fft.ifft(Y2).real
+ax[5].plot(t, iy)
+ax[5].set_xlabel('Time (s)')
+ax[5].set_ylabel('Amplitude')
 plt.show()
+
 #plt.savefig('a.png')
 #plt.close()
 #相位谱怎么求 arctan(虚部除以实部)
 print(Y[50].real)
 print(Y[50].imag)
-print(np.arctan2(Y[50].imag,Y[50].real)/np.pi)
+print("相位谱：",np.arctan2(Y[50].imag,Y[50].real)/np.pi)
